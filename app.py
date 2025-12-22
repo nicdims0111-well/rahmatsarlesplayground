@@ -19,7 +19,7 @@ USERS = {
 }
 
 # Konfigurasi halaman
-st.set_page_config(page_title="Personal Finance Dashboard", layout="wide")
+
 
 # Inisialisasi session_state
 if "authenticated" not in st.session_state:
