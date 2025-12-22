@@ -6,10 +6,6 @@ st.set_page_config(
     page_icon="🦈",
     layout="wide",
     initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
     }
 )
 
@@ -31,7 +27,7 @@ if "data" not in st.session_state:
 
 # Login Page
 if not st.session_state.authenticated:
-    st.title("🔐 Login Page")
+   st.header("These headers have rotating dividers", divider=True)
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
