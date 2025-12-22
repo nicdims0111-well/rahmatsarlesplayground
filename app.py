@@ -1,3 +1,3 @@
 import streamlit as st
 
-st.write(:blue "Hello, *MOKKK!* :sunglasses:")
+st.write(:blue: "Hello, *MOKKK!* :sunglasses:")
