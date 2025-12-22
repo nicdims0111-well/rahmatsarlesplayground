@@ -15,9 +15,6 @@ USERS = {
     "user1": "password1"
 }
 
-# Konfigurasi halaman
-
-
 # Inisialisasi session_state
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -41,4 +38,13 @@ if not st.session_state.authenticated:
         else:
             st.error("Invalid username or password")
     st.stop()
+
+page = st.sidebar.selectbox(
+    "📄 Go to Page",
+    ("Dashboard", "Upload Data", "Finance Chatbot", "Settings")
+)
+
+
+
+
 
