@@ -13,4 +13,16 @@ st.set_page_config(
     }
 )
 
+st.title("🔐 Login Page")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if USERS.get(username) == password:
+            st.session_state.authenticated = True
+            st.session_state.username = username
+            st.success("Login successful!")
+            st.rerun()
+        else:
+            st.error("Invalid username or password")
+
 
