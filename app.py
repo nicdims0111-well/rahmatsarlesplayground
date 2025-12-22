@@ -44,6 +44,15 @@ page = st.sidebar.selectbox(
     ("Dashboard", "Upload Data", "Finance Chatbot", "Settings")
 )
 
+# Sample chatbot reply
+def finance_bot(question, df):
+    if df is None:
+        return "Please upload your data first."
+    if "pengeluaran terbesar" in question.lower():
+        max_row = df.loc[df["Amount"].idxmin()]
+        return f"Pengeluaran terbesar Anda adalah {abs(max_row['Amount']):,.0f} untuk {max_row['Category']} pada {max_row['Date']}."
+    return "Maaf, saya belum memahami pertanyaan Anda sepenuhnya."
+
 
 
 
