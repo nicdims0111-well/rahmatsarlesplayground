@@ -11,7 +11,7 @@ st.set_page_config(
 
 
 USERS = {
-    "waryo": "admin123",
+    "waryo": "123456789",
     "user1": "password1"
 }
 
