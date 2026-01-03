@@ -1,152 +1,111 @@
+# app.py
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+from datetime import datetime
 
-# ======================================================
-# BASIC CONFIG
-# ======================================================
-st.set_page_config(
-    page_title="Lab Concentration Calculator",
-    layout="wide"
+
+# Dummy user data (untuk simulasi login)
+USERS = {
+    "admin": "admin123",
+    "user1": "password1"
+}
+
+# Konfigurasi halaman
+st.set_page_config(page_title="Personal Finance Dashboard", layout="wide")
+
+# Inisialisasi session_state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "username" not in st.session_state:
+    st.session_state.username = None
+if "data" not in st.session_state:
+    st.session_state.data = None
+
+# Login Page
+if not st.session_state.authenticated:
+    st.title("🔐 Login Page")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if USERS.get(username) == password:
+            st.session_state.authenticated = True
+            st.session_state.username = username
+            st.success("Login successful!")
+            st.rerun()
+        else:
+            st.error("Invalid username or password")
+    st.stop()
+
+# Sidebar Navigation
+page = st.sidebar.selectbox(
+    "📄 Go to Page",
+    ("Dashboard", "Upload Data", "Finance Chatbot", "Settings")
 )
 
-st.title("🔬 Laboratory Concentration Calculator")
-st.caption("Molarity • Normality • PPM • Mass • Dilution")
 
-# ======================================================
-# SIDEBAR NOTE (IMPORTANT CONCEPT)
-# ======================================================
-# Streamlit hanya memiliki SATU sidebar.
-# "Dua sidebar" di sini disimulasikan dengan:
-# 1. Sidebar utama (Insight)
-# 2. Sidebar section kedua menggunakan expander
 
-# ======================================================
-# SIDEBAR 1 — INSIGHT (TEXT ONLY)
-# ======================================================
-st.sidebar.header("📘 Insight")
-st.sidebar.markdown(
-    """
-    🔹 Lorem ipsum dolor sit amet, consectetur adipiscing elit.  
-    🔹 Laboratorium kimia membutuhkan perhitungan yang presisi.  
-    🔹 Kesalahan satuan dapat menyebabkan kesalahan eksperimen.  
-    🔹 Gunakan kalkulator ini untuk membantu pekerjaan rutin di lab.  
-    🔹 Always double-check your calculations.
-    """
-)
 
-st.sidebar.divider()
 
-# ======================================================
-# SIDEBAR 2 — KALKULATOR (USING EXPANDER)
-# ======================================================
-with st.sidebar.expander("🧮 Kalkulator", expanded=True):
-    menu = st.radio(
-        "Pilih jenis kalkulator",
-        (
-            "Massa → Konsentrasi",
-            "Konsentrasi → Massa",
-            "Pengenceran Larutan"
-        )
-    )
+# Sample chatbot reply
+def finance_bot(question, df):
+    if df is None:
+        return "Please upload your data first."
+    if "pengeluaran terbesar" in question.lower():
+        max_row = df.loc[df["Amount"].idxmin()]
+        return f"Pengeluaran terbesar Anda adalah {abs(max_row['Amount']):,.0f} untuk {max_row['Category']} pada {max_row['Date']}."
+    return "Maaf, saya belum memahami pertanyaan Anda sepenuhnya."
 
-# ======================================================
-# HELPER FUNCTIONS
-# ======================================================
 
-def volume_to_liter(v, unit):
-    if unit == "L":
-        return v
-    if unit == "mL":
-        return v / 1000
-    if unit == "µL":
-        return v / 1_000_000
+# Dashboard Page
+if page == "Dashboard":
+    st.title("📊 Personal Finance Dashboard")
+    if st.session_state.data is None:
+        st.info("Please upload your transaction data first on the 'Upload Data' page.")
+    else:
+        df = st.session_state.data
+        total_income = df[df["Amount"] > 0]["Amount"].sum()
+        total_expense = df[df["Amount"] < 0]["Amount"].sum()
+        net_balance = total_income + total_expense
 
-# ======================================================
-# MAIN PAGE CONTENT
-# ======================================================
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Income", f"Rp {total_income:,.0f}")
+        col2.metric("Total Expense", f"Rp {abs(total_expense):,.0f}")
+        col3.metric("Net Balance", f"Rp {net_balance:,.0f}")
 
-# ------------------------------------------------------
-# 1. MASS → CONCENTRATION
-# ------------------------------------------------------
-if menu == "Massa → Konsentrasi":
-    st.header("⚗️ Hitung Konsentrasi dari Massa")
+        st.subheader("📈 Monthly Expenses")
+        df["Month"] = pd.to_datetime(df["Date"]).dt.to_period("M").astype(str)
+        monthly = df[df["Amount"] < 0].groupby("Month")["Amount"].sum().reset_index()
+        fig = px.bar(monthly, x="Month", y="Amount", title="Monthly Expenses", labels={'Amount':'Total Expense'})
+        st.plotly_chart(fig, use_container_width=True)
 
-    col1, col2 = st.columns(2)
+        st.subheader("📊 Expense by Category")
+        category = df[df["Amount"] < 0].groupby("Category")["Amount"].sum().reset_index()
+        fig2 = px.bar(category, x="Category", y="Amount", title="Expenses by Category", labels={'Amount':'Total Expense'})
+        st.plotly_chart(fig2, use_container_width=True)
 
-    with col1:
-        mass = st.number_input("Massa zat (g)", min_value=0.0, value=1.0)
-        molar_mass = st.number_input("Mr / Molar mass (g/mol)", min_value=0.0, value=58.44)
-        n_equiv = st.number_input("Jumlah ekivalen (n)", min_value=1.0, value=1.0)
 
-    with col2:
-        volume = st.number_input("Volume larutan", min_value=0.0, value=100.0)
-        volume_unit = st.selectbox("Satuan volume", ["mL", "L", "µL"])
+# Upload Page
+elif page == "Upload Data":
+    st.title("📁 Upload Your Financial Transactions")
+    st.markdown("Format file: CSV dengan kolom `Date`, `Amount`, `Category`")
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    if uploaded_file:
+        try:
+            df = pd.read_csv(uploaded_file)
+            df["Date"] = pd.to_datetime(df["Date"])
+            st.dataframe(df.head())
+            st.session_state.data = df
+            st.success("Data uploaded successfully!")
+        except Exception as e:
+            st.error(f"Error loading data: {e}")
 
-    V_L = volume_to_liter(volume, volume_unit)
+# Chatbot Page
+elif page == "Finance Chatbot":
+    st.title("💬 Ask Our Finance Bot")
+    st.chat_message("assistant").write("Hi! Saya adalah FinanceBot. Tanyakan apapun seputar keuangan Anda!")
+    if prompt := st.chat_input("Tulis pertanyaan Anda..."):
+        st.chat_message("user").write(prompt)
+        response = finance_bot(prompt, st.session_state.data)
+        st.chat_message("assistant").write(response)
 
-    if V_L > 0 and molar_mass > 0:
-        mol = mass / molar_mass
-        M = mol / V_L
-        N = M * n_equiv
-        ppm = (mass * 1000) / V_L
-
-        st.subheader("📊 Hasil Perhitungan")
-        st.metric("Molaritas (M)", f"{M:.6g}")
-        st.metric("Normalitas (N)", f"{N:.6g}")
-        st.metric("PPM (mg/L)", f"{ppm:.6g}")
-
-# ------------------------------------------------------
-# 2. CONCENTRATION → MASS
-# ------------------------------------------------------
-elif menu == "Konsentrasi → Massa":
-    st.header("⚖️ Hitung Massa dari Konsentrasi")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        concentration = st.number_input("Nilai konsentrasi", min_value=0.0, value=0.1)
-        unit = st.selectbox("Satuan konsentrasi", ["M", "N", "ppm"])
-        molar_mass = st.number_input("Mr / Molar mass (g/mol)", min_value=0.0, value=58.44)
-        n_equiv = st.number_input("Jumlah ekivalen (n)", min_value=1.0, value=1.0)
-
-    with col2:
-        volume = st.number_input("Volume larutan", min_value=0.0, value=250.0)
-        volume_unit = st.selectbox("Satuan volume", ["mL", "L", "µL"], key="vol2")
-
-    V_L = volume_to_liter(volume, volume_unit)
-
-    if V_L > 0:
-        if unit == "M":
-            mass = concentration * V_L * molar_mass
-        elif unit == "N":
-            mass = (concentration / n_equiv) * V_L * molar_mass
-        else:  # ppm
-            mass = concentration * V_L / 1000
-
-        st.subheader("📊 Hasil Perhitungan")
-        st.metric("Massa yang harus ditimbang (g)", f"{mass:.6g}")
-
-# ------------------------------------------------------
-# 3. DILUTION
-# ------------------------------------------------------
-elif menu == "Pengenceran Larutan":
-    st.header("🧪 Pengenceran Larutan (C₁V₁ = C₂V₂)")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        C1 = st.number_input("Konsentrasi awal (C1)", min_value=0.0, value=1.0)
-        C2 = st.number_input("Konsentrasi akhir (C2)", min_value=0.0, value=0.1)
-
-    with col2:
-        V2 = st.number_input("Volume akhir (V2)", min_value=0.0, value=500.0)
-        V2_unit = st.selectbox("Satuan volume", ["mL", "L", "µL"], key="vol3")
-
-    V2_L = volume_to_liter(V2, V2_unit)
-
-    if C1 > 0 and V2_L > 0:
-        V1_L = (C2 * V2_L) / C1
-        st.subheader("📊 Hasil Perhitungan")
-        st.metric("Volume stok (V1)", f"{V1_L*1000:.6g} mL")
-
-st.markdown("---")
-st.caption("© 2026 • Streamlit Lab Calculator")
