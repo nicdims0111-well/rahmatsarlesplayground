@@ -113,6 +113,30 @@ elif page == "Finance Chatbot":
 """
 )
 
+menu = st.sidebar.radio(
+    "Pilih kalkulator",
+    [
+        "Massa → Konsentrasi",
+        "Konsentrasi → Massa",
+        "Pengenceran"
+    ]
+)
+
+if menu == "Massa → Konsentrasi":
+    st.header("Massa → Konsentrasi")
+    mass = st.number_input("Massa (g)")
+    volume = st.number_input("Volume (mL)")
+
+elif menu == "Konsentrasi → Massa":
+    st.header("Konsentrasi → Massa")
+    conc = st.number_input("Konsentrasi")
+    volume = st.number_input("Volume (mL)")
+
+elif menu == "Pengenceran":
+    st.header("Pengenceran")
+    C1 = st.number_input("C1")
+    C2 = st.number_input("C2")
+
 
 
    
