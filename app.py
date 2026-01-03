@@ -102,27 +102,15 @@ elif page == "Upload Data":
 # Chatbot Page
 elif page == "Finance Chatbot":
     st.set_page_config(page_title="Lab Concentration Calculator", layout="centered")
-
-st.title("🔬 Lab Concentration & Mass Converter")
-st.markdown(
-    """
-A handy Streamlit app to:
-- convert **mass (g)** + **volume** → **molarity / normality / ppm**
-- convert **molarity / normality / ppm** → **mass to weigh (g)**
-- perform **dilution calculations** (C1V1 = C2V2)
-
-**Notes:** Normality requires the number of equivalents per mole (n). For ppm conversions involving molar units, provide the molar mass.
-"""
-)
-
-st.sidebar.header("About")
-st.sidebar.write("Created for lab workflows: supports g ↔ M/N/ppm and dilution calculations.")
-
-calc_type = st.radio("Pilih jenis kalkulator:", (
+    st.title("🔬 Lab Concentration & Mass Converter")
+    st.sidebar.header("About")
+    st.sidebar.write("Created for lab workflows: supports g ↔ M/N/ppm and dilution calculations.")
+    calc_type = st.radio("Pilih jenis kalkulator:", (
     "Hitung konsentrasi dari massa (g → M/N/ppm)",
     "Hitung massa dari konsentrasi (M/N/ppm → g)",
     "Pengenceran (C1V1 = C2V2)"
 ))
+ 
 
 # Helper converters
 
