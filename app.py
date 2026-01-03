@@ -102,9 +102,9 @@ elif page == "Upload Data":
 # Chatbot Page
 elif page == "Finance Chatbot":
     st.title("🔬 Lab Concentration & Mass Converter")
-st.markdown(
+    st.markdown(
     """
-A handy Streamlit app to:
+      A handy Streamlit app to:
 - convert **mass (g)** + **volume** → **molarity / normality / ppm**
 - convert **molarity / normality / ppm** → **mass to weigh (g)**
 - perform **dilution calculations** (C1V1 = C2V2)
@@ -113,10 +113,9 @@ A handy Streamlit app to:
 """
 )
 
-st.sidebar.header("About")
-st.sidebar.write("Created for lab workflows: supports g ↔ M/N/ppm and dilution calculations.")
 
-calc_type = st.radio("Pilih jenis kalkulator:", (
+
+    calc_type = st.radio("Pilih jenis kalkulator:", (
     "Hitung konsentrasi dari massa (g → M/N/ppm)",
     "Hitung massa dari konsentrasi (M/N/ppm → g)",
     "Pengenceran (C1V1 = C2V2)"
